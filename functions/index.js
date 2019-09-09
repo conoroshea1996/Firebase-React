@@ -11,6 +11,7 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
     response.send("Hello World!");
 });
 
+//  get posts from collection
 exports.getPosts = functions.https.onRequest((request, response) => {
     admin.firestore().collection('posts').get()
         .then((data) => {
@@ -23,6 +24,8 @@ exports.getPosts = functions.https.onRequest((request, response) => {
         .catch(err => console.log(err))
 })
 
+
+// Create post
 exports.createPosts = functions.https.onRequest((request, response) => {
     const newPost = {
         body: request.body.body,
@@ -30,11 +33,11 @@ exports.createPosts = functions.https.onRequest((request, response) => {
         createdAt: admin.firestore.Timestamp.fromDate(new Date())
     }
 
-    admin.firestore().collection('post')
+    admin.firestore()
+        .collection('posts')
         .add(newPost)
         .then(doc => {
-            response.json({ message: `document ${doc.id} was created` })
+            response.json({ message: `document ${doc.id} was created` });
         })
         .catch(err => console.log(err));
-        )
-})
+});
