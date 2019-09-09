@@ -24,5 +24,17 @@ exports.getPosts = functions.https.onRequest((request, response) => {
 })
 
 exports.createPosts = functions.https.onRequest((request, response) => {
+    const newPost = {
+        body: request.body.body,
+        userHandle: request.body.userHandle,
+        createdAt: admin.firestore.Timestamp.fromDate(new Date())
+    }
 
+    admin.firestore().collection('post')
+        .add(newPost)
+        .then(doc => {
+            response.json({ message: `document ${doc.id} was created` })
+        })
+        .catch(err => console.log(err));
+        )
 })
