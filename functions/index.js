@@ -9,11 +9,18 @@ admin.initializeApp();
 
 //  get posts from collection
 app.get('/posts', (request, response) => {
-    admin.firestore().collection('posts').get()
+    admin.firestore()
+        .collection('posts')
+        .orderBy('createdAt', 'desc')
+        .get()
         .then((data) => {
             let posts = [];
             data.forEach(doc => {
-                posts.push(doc.data());
+                posts.push({
+                    postId: doc.id,
+                    body: doc.data().body,
+                    createdAt: doc.data().createdAt
+                });
             });
             return response.json(posts)
         })
