@@ -27,6 +27,9 @@ exports.getPosts = functions.https.onRequest((request, response) => {
 
 // Create post
 exports.createPosts = functions.https.onRequest((request, response) => {
+    if (request.method !== 'POST') {
+        return response.status(400).json({ error: 'Metod not allowed' })
+    }
     const newPost = {
         body: request.body.body,
         userHandle: request.body.userHandle,
@@ -37,7 +40,10 @@ exports.createPosts = functions.https.onRequest((request, response) => {
         .collection('posts')
         .add(newPost)
         .then(doc => {
-            response.json({ message: `document ${doc.id} was created` });
+            response.json({
+                message: `document ${doc.id} was created`,
+                user: ` created by ${newPost.userHandle}`
+            });
         })
         .catch(err => console.log(err));
 });
