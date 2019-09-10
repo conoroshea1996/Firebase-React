@@ -19,7 +19,9 @@ app.get('/posts', (request, response) => {
                 posts.push({
                     postId: doc.id,
                     body: doc.data().body,
-                    createdAt: doc.data().createdAt
+                    createdAt: doc.data().createdAt,
+                    likeCount: doc.data().likeCount,
+                    commentCount: doc.data().commentCount
                 });
             });
             return response.json(posts)
@@ -32,7 +34,9 @@ app.post('/createpost', (request, response) => {
     const newPost = {
         body: request.body.body,
         userHandle: request.body.userHandle,
-        createdAt: admin.firestore.Timestamp.fromDate(new Date())
+        createdAt: new Date().toISOString(),
+        likeCount: 0,
+        commentCount: 0
     }
 
     admin.firestore()
