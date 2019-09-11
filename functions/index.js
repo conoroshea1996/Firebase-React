@@ -7,6 +7,20 @@ const app = express();
 
 admin.initializeApp();
 
+const firebaseConfig = {
+    apiKey: "AIzaSyDl6l0pyX1r6_1pYGuYhtYgN6HsZS6M_O8",
+    authDomain: "social-app-68011.firebaseapp.com",
+    databaseURL: "https://social-app-68011.firebaseio.com",
+    projectId: "social-app-68011",
+    storageBucket: "social-app-68011.appspot.com",
+    messagingSenderId: "304649285757",
+    appId: "1:304649285757:web:2451cdc8405ad20a870114"
+};
+
+const firebase = require('firebase');
+firebase.initializeApp(firebaseConfig);
+
+
 //  get posts from collection
 app.get('/posts', (request, response) => {
     admin.firestore()
@@ -51,4 +65,22 @@ app.post('/createpost', (request, response) => {
         .catch(err => console.log(err));
 });
 
-exports.api = functions.https.onRequest(app)
+// Sign up route 
+
+app.post('/signup', (request, response) => {
+    const newUser = {
+        email: request.body.email,
+        password: request.body.password,
+        confirmPassword: request.body.confirmPassword,
+        handle: request.body.handle
+    };
+
+    firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
+        .then(data => {
+            return response.status(201).json({ 'message': `user ${data.user.uid} has been created` })
+        })
+        .catch(err => console.log(err))
+})
+
+
+exports.api = functions.region('europe-west1').https.onRequest(app)
