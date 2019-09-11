@@ -89,11 +89,9 @@ app.post('/signup', (request, response) => {
                 return response.status(400).json({ handle: 'this handle is already taken' })
             }
             else {
-                return firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
-                    .then(data => {
-                        return response.status(201).json({ 'message': `user ${data.user.uid} has been created` })
-                    })
-                    .catch(err => console.log(err))
+                return firebase
+                    .auth()
+                    .createUserWithEmailAndPassword(newUser.email, newUser.password)
             }
         })
         .then(data => {
@@ -103,8 +101,11 @@ app.post('/signup', (request, response) => {
             return response.status(201).json(token)
         })
         .catch(err => {
-            console.log(err);
-            return response.status(500).json({ error: err });
+            if (err.code === "auth/email-already-in-use") {
+                return response.status(400).json({ error: 'Email already in use' })
+            } else {
+                return response.status(500).json({ error: err.code });
+            }
         })
 
 })
