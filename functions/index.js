@@ -20,10 +20,11 @@ const firebaseConfig = {
 const firebase = require('firebase');
 firebase.initializeApp(firebaseConfig);
 
+const db = admin.firestore();
 
 //  get posts from collection
 app.get('/posts', (request, response) => {
-    admin.firestore()
+    db
         .collection('posts')
         .orderBy('createdAt', 'desc')
         .get()
@@ -53,7 +54,7 @@ app.post('/createpost', (request, response) => {
         commentCount: 0
     }
 
-    admin.firestore()
+    db
         .collection('posts')
         .add(newPost)
         .then(doc => {
@@ -65,8 +66,10 @@ app.post('/createpost', (request, response) => {
         .catch(err => console.log(err));
 });
 
-// Sign up route 
 
+
+
+// Sign up route 
 app.post('/signup', (request, response) => {
     const newUser = {
         email: request.body.email,
@@ -75,11 +78,27 @@ app.post('/signup', (request, response) => {
         handle: request.body.handle
     };
 
-    firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
-        .then(data => {
-            return response.status(201).json({ 'message': `user ${data.user.uid} has been created` })
+    db.doc(`/users/${newUser.handle}`).get()
+        .then(doc => {
+            if (doc.exists) {
+                return response.status(400).json({ handle: 'this handle is already taken' })
+            }
+            else {
+                return firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
+                    .then(data => {
+                        return response.status(201).json({ 'message': `user ${data.user.uid} has been created` })
+                    })
+                    .catch(err => console.log(err))
+            }
         })
-        .catch(err => console.log(err))
+        .then(data => {
+            return data.user.getIdToken();
+        })
+        .then(token => {
+            return response.status(201).json(token)
+        })
+        .catch(err => console.log(err));
+
 })
 
 
