@@ -1,5 +1,10 @@
+// Environment Variables
+
+
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+
+require('dotenv').config();
 
 // instalize express 
 const express = require('express');
@@ -8,7 +13,7 @@ const app = express();
 admin.initializeApp();
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDl6l0pyX1r6_1pYGuYhtYgN6HsZS6M_O8",
+    apiKey: process.env.apiKey,
     authDomain: "social-app-68011.firebaseapp.com",
     databaseURL: "https://social-app-68011.firebaseio.com",
     projectId: "social-app-68011",
@@ -97,7 +102,10 @@ app.post('/signup', (request, response) => {
         .then(token => {
             return response.status(201).json(token)
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            console.log(err);
+            return response.status(500).json({ error: err });
+        })
 
 })
 
