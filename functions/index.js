@@ -83,6 +83,7 @@ app.post('/signup', (request, response) => {
         handle: request.body.handle
     };
 
+    let token, userId;
     db.doc(`/users/${newUser.handle}`).get()
         .then(doc => {
             if (doc.exists) {
@@ -95,10 +96,21 @@ app.post('/signup', (request, response) => {
             }
         })
         .then(data => {
+            userId = data.user.uid;
             return data.user.getIdToken();
         })
-        .then(token => {
-            return response.status(201).json(token)
+        .then(tokenId => {
+            token = tokenId;
+            const userCredentials = {
+                handle: newUser.handle,
+                email: newUser.email,
+                createdAt: new Date().toISOString(),
+                userId
+            };
+            return db.doc(`/users/${newUser.handle}`).set(userCredentials);
+        })
+        .then(() => {
+            return response.status(201).json({ token })
         })
         .catch(err => {
             if (err.code === "auth/email-already-in-use") {
