@@ -72,6 +72,22 @@ app.post('/createpost', (request, response) => {
 });
 
 
+const isEmail = (email) => {
+    const regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (email.match(regex)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+const isEmpty = (string) => {
+    if (string.trim() === '') {
+        return true;
+    } else {
+        return false;
+    };
+};
 
 
 // Sign up route 
@@ -82,6 +98,30 @@ app.post('/signup', (request, response) => {
         confirmPassword: request.body.confirmPassword,
         handle: request.body.handle
     };
+
+    let errors = {};
+
+    //  User validtion 
+    if (isEmpty(newUser.email)) {
+        errors.email = 'Email must not be empty';
+    } else if (!isEmail(newUser.email)) {
+        errors.email = 'Email is not valid format';
+    }
+
+    if (isEmpty(newUser.password)) {
+        errors.password = 'Password must not be empty';
+    }
+    if (newUser.password !== newUser.confirmPassword) {
+        errors.confirmPassword = 'Password must Match';
+    }
+
+    if (isEmpty(newUser.handle)) {
+        errors.handle = 'handle must not be empty';
+    }
+
+    if (Object.keys(errors).length > 0) {
+        return response.status(400).json(errors);
+    }
 
     let token, userId;
     db.doc(`/users/${newUser.handle}`).get()
