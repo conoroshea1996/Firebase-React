@@ -184,10 +184,16 @@ app.post('/login', (request, response) => {
     firebase.auth().signInWithEmailAndPassword(user.email, user.password)
         .then(data => {
             return data.user.getIdToken();
-        }).then(token => {
+        })
+        .then(token => {
             return response.json({ token, login: true });
-        }).catch(err => {
-            return response.status(500).json({ error: err.code });
+        })
+        .catch(err => {
+            if (err.code === 'auth/wrong-password') {
+                return response.status(403).json({ general: 'Wrong credentials , please try again' })
+            } else {
+                return response.status(500).json({ error: err.code });
+            }
         })
 })
 
