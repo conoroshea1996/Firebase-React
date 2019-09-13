@@ -49,15 +49,44 @@ app.get('/posts', (request, response) => {
         .catch(err => console.log(err))
 })
 
+const FBAuth = (request, response, next) => {
+    let idToken;
+    if (request.headers.authorization && request.headers.authorization.startsWith('Bearer ')) {
+        idToken = request.headers.authorization.split('Bearer ')[1];
+    } else {
+        return response.status(403).json({ error: 'Unauthorized' })
+    }
+
+    admin.auth().verifyIdToken(idToken)
+        .then(decodedToken => {
+            request.user = decodedToken;
+            console.log(decodedToken);
+            return db.collection('users')
+                .where('userId', '==', request.user.uid)
+                .limit(1)
+                .get();
+        })
+        .then(data => {
+            console.log(data.docs[0].data().handle);
+            request.user.handle = data.docs[0].data().handle;
+            return next();
+        })
+        .catch(err => {
+            return response.status(403).json(err)
+        })
+
+}
 // Create post
-app.post('/createpost', (request, response) => {
+app.post('/createpost', FBAuth, (request, response) => {
     const newPost = {
         body: request.body.body,
-        userHandle: request.body.userHandle,
+        userHandle: request.user.handle,
         createdAt: new Date().toISOString(),
         likeCount: 0,
         commentCount: 0
     }
+    console.log(newPost);
+
 
     db
         .collection('posts')
@@ -186,7 +215,7 @@ app.post('/login', (request, response) => {
             return data.user.getIdToken();
         })
         .then(token => {
-            return response.json({ token, login: true });
+            return response.json({ token });
         })
         .catch(err => {
             if (err.code === 'auth/wrong-password') {
