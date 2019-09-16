@@ -1,5 +1,6 @@
 require('dotenv').config();
-modules = {
+
+module.exports = {
     apiKey: process.env.apiKey,
     authDomain: "social-app-68011.firebaseapp.com",
     databaseURL: "https://social-app-68011.firebaseio.com",

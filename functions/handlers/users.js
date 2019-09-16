@@ -3,7 +3,7 @@ const { db } = require('../util/admin');
 const config = require('../util/config');
 
 const firebase = require('firebase');
-firebase.initializeApp();
+firebase.initializeApp(config);
 
 const { validateSignUpData, validateLoginData } = require('../util/validators');
 
@@ -70,6 +70,9 @@ exports.login = (request, response) => {
 
 
     const { valid, errors } = validateLoginData(user)
+    if (!valid) {
+        return response.status(400).json(errors)
+    }
 
     firebase.auth().signInWithEmailAndPassword(user.email, user.password)
         .then(data => {
